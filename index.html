@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>에너지 기반 의료기기 기술 탐구</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Neutral Tech -->
+    <!-- Application Structure Plan: The application uses a thematic, two-level interactive structure. The top level is a dashboard-style grid of nine medical technologies, providing a quick overview. This design was chosen to avoid overwhelming the user with dense information upfront. Clicking a technology card triggers the second level, which dynamically displays a detailed breakdown (principle, applications, pros/cons) in a dedicated section below the grid. This progressive disclosure approach allows users to self-direct their exploration based on interest, making complex information more digestible. A comparative bar chart is always visible to provide market context across all technologies, reinforcing relationships between the different topics. -->
+    <!-- Visualization & Content Choices: 1. Technology Overview -> Goal: Organize/Navigate -> Method: Interactive HTML/CSS Grid -> Interaction: Click to reveal details -> Justification: Provides a clear, non-linear entry point into the content. 2. Technology Details -> Goal: Inform -> Method: Dynamically updated HTML text blocks -> Interaction: Content changes based on grid selection -> Justification: Presents detailed information in a structured, easy-to-read format without page reloads. 3. Market Comparison -> Goal: Compare -> Method: Bar Chart -> Interaction: Static comparison of all technologies with tooltips on hover -> Justification: Offers an immediate quantitative comparison of market sizes, providing valuable context. Library: Chart.js (Canvas) is used for its responsiveness and ease of implementation. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 50vh;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 450px;
+            }
+        }
+        .tech-card.active {
+            transform: scale(1.05);
+            border-color: #0d9488;
+            box-shadow: 0 0 15px rgba(13, 148, 136, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-stone-50 text-slate-800">
+
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-10 shadow-sm">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <h1 class="text-2xl md:text-3xl font-bold text-teal-700 text-center">에너지 기반 의료기기 기술 탐구</h1>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        <section id="introduction" class="mb-12 text-center max-w-3xl mx-auto">
+            <h2 class="text-xl md:text-2xl font-semibold text-slate-700 mb-4">다양한 에너지 기술, 의료의 미래를 열다</h2>
+            <p class="text-slate-600 leading-relaxed">
+                본 페이지는 자기장, 레이저, 초음파 등 다양한 에너지를 활용하는 의료기기의 핵심 원리와 적용 분야를 소개하는 대화형 가이드입니다. 각 기술 카드를 클릭하여 상세 정보를 확인하고, 최신 시장 동향을 차트를 통해 살펴보세요.
+            </p>
+        </section>
+
+        <section id="tech-grid" class="mb-12">
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 md:gap-6">
+            </div>
+        </section>
+
+        <section id="details-section" class="bg-white p-6 md:p-8 rounded-2xl shadow-lg min-h-[300px] transition-opacity duration-500 ease-in-out opacity-0" style="display: none;">
+             <div id="details-content" class="flex flex-col md:flex-row gap-8">
+                <div class="w-full">
+                    <h2 id="detail-title" class="text-2xl md:text-3xl font-bold text-teal-600 mb-4 flex items-center gap-4"></h2>
+                    <div id="detail-text-content" class="space-y-6"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="market-analysis" class="mt-16">
+             <h2 class="text-xl md:text-2xl font-semibold text-slate-700 mb-6 text-center">주요 기술 분야별 글로벌 시장 규모 전망 (2025년)</h2>
+            <div class="bg-white p-4 md:p-6 rounded-2xl shadow-lg">
+                <div class="chart-container">
+                    <canvas id="marketChart"></canvas>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <footer class="bg-slate-800 text-stone-300 mt-16 py-6">
+        <div class="container mx-auto px-4 text-center text-sm">
+            <p>&copy; 2025 Interactive Medical Technology Report. All information is for educational purposes only.</p>
+        </div>
+    </footer>
+
+
+    <script>
+        const technologyData = {
+            'magnetic-field': {
+                title: '자기장',
+                icon: '🧲',
+                description: '전자기장을 이용하여 세포 활동을 촉진하고 통증을 완화하는 기술입니다.',
+                principle: '인체에 무해한 자기장을 가해 조직 깊숙이 위치한 신경이나 근육 세포를 자극합니다. 이는 세포막의 이온 투과성을 변화시켜 세포 대사를 활성화하고, 혈액 순환 개선 및 염증 감소 효과를 유도합니다.',
+                applications: '만성 통증 관리, 우울증 치료(TMS), 재활 치료, 골절 치유 촉진',
+                pros_cons: {
+                    '장점': ['비침습적이고 안전함', '신체 깊은 곳까지 자극 가능', '약물 부작용이 없음'],
+                    '단점': ['치료 시간이 비교적 김', '체내 금속 임플란트 환자 사용 불가', '즉각적인 효과가 적을 수 있음']
+                },
+                marketValue: 1.8
+            },
+            'laser': {
+                title: '레이저',
+                icon: '✨',
+                description: '증폭된 빛 에너지를 정밀하게 조사하여 치료 효과를 얻는 기술입니다.',
+                principle: '특정 파장의 단색광을 고밀도로 증폭시켜 조직에 조사합니다. 에너지 수준에 따라 조직을 절개, 기화시키거나(고출력), 세포 재생을 촉진하고 염증을 줄이는(저출력) 광화학적 반응을 일으킵니다.',
+                applications: '피부과 시술(점 제거, 제모), 안과(라식/라섹), 외과 수술, 통증 클리닉(LLLT)',
+                pros_cons: {
+                    '장점': ['정밀한 시술 가능', '적은 출혈 및 빠른 회복', '다양한 분야에 적용 가능'],
+                    '단점': ['고가의 장비 비용', '시술자의 숙련도가 중요', '피부 타입에 따른 부작용 가능성']
+                },
+                marketValue: 14.5
+            },
+            'ultrasound': {
+                title: '초음파',
+                icon: '🔊',
+                description: '고주파 음파를 이용해 인체 내부를 영상화하거나 치료하는 기술입니다.',
+                principle: '인체에 무해한 초음파를 체내로 보낸 후, 각기 다른 조직에서 반사되어 돌아오는 음파를 분석하여 영상으로 재구성합니다(진단용). 고강도 초음파를 한 점에 집중시키면 열이 발생하여 종양 세포를 파괴할 수도 있습니다(치료용, HIFU).',
+                applications: '산부인과, 내과 등 영상 진단, 종양 제거(HIFU), 물리치료(심부 온열 효과)',
+                pros_cons: {
+                    '장점': ['방사선 노출이 없어 안전함', '실시간 영상 확인 가능', '진단과 치료에 모두 활용'],
+                    '단점': ['공기나 뼈를 투과하기 어려움', '시술자의 능력에 따라 정확도 차이 발생', 'HIFU 시술 시 정밀한 제어 필요']
+                },
+                marketValue: 8.2
+            },
+            'infrared': {
+                title: '적외선',
+                icon: '🔥',
+                description: '눈에 보이지 않는 열에너지를 이용해 혈액순환을 촉진하는 기술입니다.',
+                principle: '적외선은 피부 표면을 투과하여 조직의 온도를 상승시키는 복사열입니다. 이 온열 효과는 혈관을 확장시켜 혈류량을 증가시키고, 근육 이완과 통증 완화에 도움을 줍니다.',
+                applications: '근육통 완화, 관절염 치료 보조, 혈액순환 개선, 피부 미용',
+                pros_cons: {
+                    '장점': ['사용이 간편하고 안전함', '가정용 기기로도 널리 보급', '즉각적인 온열감과 이완 효과'],
+                    '단점': ['치료 깊이가 얕음', '장시간 사용 시 저온 화상 위험', '근본적인 치료보다는 증상 완화 목적']
+                },
+                marketValue: 1.1
+            },
+            'microcurrent': {
+                title: '미세전류',
+                icon: '⚡',
+                description: '인체의 생체 전류와 유사한 세기의 전류로 세포 재생을 돕는 기술입니다.',
+                principle: '매우 낮은 수준의 전류(마이크로암페어 단위)를 피부에 흘려보내 세포의 에너지원인 ATP 생성을 촉진합니다. 이는 손상된 조직의 회복을 돕고, 콜라겐 및 엘라스틴 생성을 자극하여 피부 탄력을 개선합니다.',
+                applications: '피부 리프팅 및 주름 개선, 상처 치유, 근육통 및 신경통 완화',
+                pros_cons: {
+                    '장점': ['통증이나 자극이 거의 없음', '세포 단위의 근본적인 케어 가능', '안전성이 높음'],
+                    '단점': ['효과를 보기까지 꾸준한 사용 필요', '심장 박동기 등 전자 기기 이식자 사용 불가', '즉각적인 변화는 미미함']
+                },
+                marketValue: 0.6
+            },
+            'sound-wave': {
+                title: '음파',
+                icon: '🎶',
+                description: '강력한 음향 충격파를 이용해 결석을 분쇄하거나 조직 재생을 유도합니다.',
+                principle: '체외에서 발생시킨 강한 압력의 음파를 특정 부위에 집중시켜 물리적 효과를 유도합니다. 대표적으로 신장 결석을 잘게 부수거나(쇄석술), 만성 근골격계 질환 부위의 혈관 재형성 및 조직 회복을 자극합니다.',
+                applications: '신장/요로 결석 제거(체외충격파쇄석술), 족저근막염, 테니스 엘보 등 통증 치료',
+                pros_cons: {
+                    '장점': ['비수술적 방법으로 결석 제거 가능', '만성 통증 치료에 효과적', '입원이 필요 없는 경우가 많음'],
+                    '단점': ['시술 시 통증이 있을 수 있음', '멍이나 부종 등 일시적 부작용', '치료 횟수가 여러 번 필요할 수 있음']
+                },
+                marketValue: 2.5
+            },
+            'thermotherapy': {
+                title: '온열',
+                icon: '🌡️',
+                description: '열을 직접적으로 가하여 통증을 완화하고 조직을 이완시키는 기술입니다.',
+                principle: '핫팩, 고주파 등 다양한 방법으로 신체 특정 부위의 온도를 40~45℃로 상승시킵니다. 이로 인해 혈관이 확장되어 산소와 영양분 공급이 원활해지고, 근육의 긴장이 풀리며 통증을 유발하는 신경 전달을 둔화시킵니다.',
+                applications: '만성 요통, 근육 경직, 관절염 통증 완화, 암 치료 보조 요법(고주파 온열 암치료)',
+                pros_cons: {
+                    '장점': ['적용이 간단하고 비용이 저렴함', '심리적 안정감 및 편안함 제공', '다양한 통증에 보편적으로 사용'],
+                    '단점': ['급성 염증이나 부상에는 악영향', '온도 조절 실패 시 화상 위험', '표면적인 치료에 국한될 수 있음']
+                },
+                marketValue: 3.1
+            },
+            'cryotherapy': {
+                title: '냉각',
+                icon: '❄️',
+                description: '급격한 냉각을 통해 염증과 부종을 감소시키는 기술입니다.',
+                principle: '얼음, 냉각 스프레이, 액체 질소 등을 이용해 피부와 조직의 온도를 급격히 낮춥니다. 이는 혈관을 수축시켜 해당 부위로 가는 혈류를 줄이고, 대사 활동과 신경 전도 속도를 늦춰 염증 반응과 통증을 억제합니다.',
+                applications: '스포츠 손상 후 응급 처치, 수술 후 부종 및 통증 관리, 류마티스 관절염, 피부과(사마귀 제거)',
+                pros_cons: {
+                    '장점': ['빠른 통증 및 부종 감소 효과', '급성기 손상에 매우 효과적', '염증 확산 방지'],
+                    '단점': ['장시간 적용 시 동상 위험', '혈액순환 장애 환자 주의 필요', '만성 통증에는 효과가 제한적일 수 있음']
+                },
+                marketValue: 0.4
+            },
+            'compression': {
+                title: '압박',
+                icon: '🩺',
+                description: '공기압이나 탄력 밴드를 이용해 신체를 압박하여 순환을 돕는 기술입니다.',
+                principle: '팔이나 다리 등 특정 부위에 점진적이거나 간헐적인 압력을 가합니다. 이 외부 압력은 정맥 혈액과 림프액이 심장 방향으로 원활하게 흐르도록 도와주어 부종을 줄이고 혈전 생성을 예방합니다.',
+                applications: '림프 부종 관리, 심부정맥혈전증(DVT) 예방, 운동 후 회복, 하지정맥류 증상 완화',
+                pros_cons: {
+                    '장점': ['비침습적이고 안전한 순환 관리', '부종 감소에 효과적', '가정에서도 사용 가능'],
+                    '단점': ['급성 혈전증이나 심부전 환자 사용 금지', '피부 자극이나 불편감 유발 가능', '근본 원인 치료가 아닌 보조 요법']
+                },
+                marketValue: 3.5
+            },
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const techGrid = document.getElementById('tech-grid').querySelector('div');
+            const detailsSection = document.getElementById('details-section');
+            const detailsContent = document.getElementById('details-content');
+            const detailTitle = document.getElementById('detail-title');
+            const detailTextContent = document.getElementById('detail-text-content');
+            let activeCard = null;
+
+            function updateDetails(techId) {
+                const data = technologyData[techId];
+                if (!data) return;
+                
+                detailTitle.innerHTML = `<span class="text-4xl">${data.icon}</span> <span>${data.title}</span>`;
+
+                const prosConsHtml = Object.entries(data.pros_cons).map(([key, value]) => `
+                    <div class="mt-2">
+                        <h4 class="font-semibold text-slate-600">${key}</h4>
+                        <ul class="list-disc list-inside text-slate-500 pl-2 space-y-1 mt-1">
+                            ${value.map(item => `<li>${item}</li>`).join('')}
+                        </ul>
+                    </div>
+                `).join('');
+
+                detailTextContent.innerHTML = `
+                    <div>
+                        <h3 class="font-bold text-lg text-slate-700 mb-2 border-b-2 border-teal-200 pb-1">핵심 원리</h3>
+                        <p class="text-slate-600 leading-relaxed">${data.principle}</p>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg text-slate-700 mb-2 border-b-2 border-teal-200 pb-1">주요 적용 분야</h3>
+                        <p class="text-slate-600 leading-relaxed">${data.applications}</p>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg text-slate-700 mb-2 border-b-2 border-teal-200 pb-1">장점 및 단점</h3>
+                        ${prosConsHtml}
+                    </div>
+                `;
+
+                if (detailsSection.style.display === 'none') {
+                    detailsSection.style.display = 'block';
+                    setTimeout(() => {
+                        detailsSection.style.opacity = '1';
+                    }, 10);
+                }
+
+                detailsSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+
+
+            Object.keys(technologyData).forEach(key => {
+                const tech = technologyData[key];
+                const card = document.createElement('button');
+                card.className = 'tech-card bg-white p-4 text-center rounded-xl shadow-md cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-2 border-transparent';
+                card.dataset.techId = key;
+                card.innerHTML = `
+                    <div class="text-5xl mb-3">${tech.icon}</div>
+                    <h3 class="font-semibold text-slate-700">${tech.title}</h3>
+                    <p class="text-xs text-slate-500 mt-1 hidden sm:block">${tech.description}</p>
+                `;
+
+                card.addEventListener('click', () => {
+                    if (activeCard) {
+                        activeCard.classList.remove('active');
+                    }
+                    card.classList.add('active');
+                    activeCard = card;
+                    updateDetails(key);
+                });
+                techGrid.appendChild(card);
+            });
+            
+            const chartCtx = document.getElementById('marketChart').getContext('2d');
+            const chartLabels = Object.values(technologyData).map(t => t.title);
+            const chartData = Object.values(technologyData).map(t => t.marketValue);
+            
+            new Chart(chartCtx, {
+                type: 'bar',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        label: '시장 규모 (십억 USD)',
+                        data: chartData,
+                        backgroundColor: 'rgba(13, 148, 136, 0.6)',
+                        borderColor: 'rgba(13, 148, 136, 1)',
+                        borderWidth: 1,
+                        borderRadius: 5,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw} B`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '시장 규모 (십억 USD)'
+                            }
+                        },
+                        y: {
+                           ticks: {
+                                autoSkip: false
+                           }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
